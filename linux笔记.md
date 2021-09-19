@@ -166,6 +166,26 @@ int main() {
 ```
 #### write() 和 read()
 
+#### lseek() 偏移量
+```c++
+off_t lseek(int fd, off_t offset, int whence);
+//文件打开有一个初始化偏移量cfo，为一个非负数
+//whence: SEEK_SET 文件开头
+            //SEEK_CUR 当前位置
+            //SEEK_END 文件末尾
+//执行成功返回新的偏移量，失败返回-1
+```
+#### stat 函数
+```c++
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
+int stat(const char *path, struct stat *buf);
+int lstat(cosnt char *pathname, struct stat *buf);
 
+//获取文件状态信息 stat lstat 当文件是一个符号链接时，lstat返回符号链接本身的信息，stat返回指向的文件的信息
+// path：文件名
+//buf：保护文件信息结构体
+//成功返回0， 失败返回 -1；
 
