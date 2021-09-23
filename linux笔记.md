@@ -232,9 +232,33 @@ pid_t fork();
 ```
 父子进程的关系：
 子进程拥有和父进程相同的栈区，堆区，BSS区，数据段，代码段。（资源消耗比较大）
-*写时拷贝，读时共享*
+**写时拷贝，读时共享**
 
 ### 区分父子进程
-*通过fork() 的返回值*
+**通过fork() 的返回值**
 
 ### 父子进程的地址空间
+
+### 进程退出函数
+```c++
+#include <stdlib.h>
+void exit(int status);  //可以刷新缓冲区
+
+#include <unistd.h>
+void _exit(int status); //属于系统调用，不会刷新缓冲区
+```
+
+### 等待子进程退出的函数
+父进程可以通过调用wait 和 waitpid 得到它退出的状态，同时彻底关闭这个进程
+wait() 和 waitpid() 的功能一样，区别在于，wait函数会阻塞，waitpid可以设置不阻塞，waitpid还可以指定等待哪个子进程结束
+**wait和waitpid调用只能清理一个子进程，清理多个需要循环调用**
+```c++
+#include <sys/types.h>
+#include <sys/wait.h>
+
+pid_t wait(int *status);
+//函数会回收子进程的资源
+```
+wait()会挂起，直到一个子进程退出或者收到一个不能被忽视的信号才会被唤醒。
+**wait()主要用于回收已经结束子进程的资源**
+
