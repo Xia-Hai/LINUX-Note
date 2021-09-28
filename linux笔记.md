@@ -326,3 +326,4 @@ int mkfifo(const char *pathname, mode_t mode);
 //  mode: 文件的权限，与打开普通文件open()函数中的mode参数相同(0666);
 
 ```
+**一个为只读而打开的一个管道进程会阻塞另一个为只写而打开的管道进程** **反过来一会造成阻塞**
