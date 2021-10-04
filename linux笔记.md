@@ -449,3 +449,65 @@ setsid()  创建一个会话，**不能再组长进程的基础上创建会话**
 
 ### 守护进程
 脱离控制终端，生命周期长
+
+### 线程
+线程其实是一个轻量级进程，在linux环境下的本质仍然是进程，为了让进程完成工作，进程至少包含一个线程
+
+**进程是CPU分配资源的最小单位，线程是CPU调度的基本单位** 线程是进程的实体，**线程本身不拥有资源，存在自己的栈空间，程序计数器，寄存器等**
+
+#### 线程共享资源
+1. 文件描述符表
+2. 每种信号的处理方式
+3. 当前工作目录
+4. 用户ID和组ID
+**内存地址空间**
+#### 线程非共享资源
+1. 线程ID 2. 处理器现场和栈指针(内核栈) 3. 独立的栈空间(用户栈) 4. errno 变量 5. 信号屏蔽字 6. 调度优先级
+
+### 线程号
+pthread_self() 函数。线程号只在所属的进程环境中有效
+使用 phread_t 来表示
+
+```c++
+#include <pthread.h>
+
+pthread_t pthread_self();
+//   获取线程号
+//   这个函数总是成功， 不会失败，不用判断返回值，类似于 umask()；
+```
+**需要指定link 线程库**
+
+pthread_equal 函数
+```c++
+int pthread_equal(pthread_t t1, pthread_t t2);
+// 相等为 非0， 不相等为0
+```
+**不能使用 == 来直接比较， 有些系统中pthread_t 定义是一个结构体，不能通过 == 比较**
+
+### 线程的创建
+pthread_creat 函数
+```c++
+#include <pthread.h>
+
+int pthread_creat(pthread_t *thread,
+            const pthread_attr_t *attr,
+            void *(*start_routine)(void *),
+            void *arg);
+    
+// 创建一个线程
+// thread：线程标识符地址  attr：线程属性结构体地址，通常为 NULL， start_routine：线程函数的入口地址， arg：传给线程函数的参数
+// 成功返回 0
+```
+**在一个线程中调用pthread_creat 创建新的线程后，函数从返回处继续执行，新的线程所执行的代码由传入的函数指针 start_routine决定**
+*pthread_creat 的错误码不在errno中，不能用perror打印，需要使用 strerror() 转换为错误码再打印*
+
+### 线程资源回收
+pthread_join 函数
+```c++
+#include <pthread.h>
+int pthread_join(pthread_t thread, void **retval);
+
+// 等待线程结束(此函数会阻塞), 回收线程资源，类似进程的wait() 函数，如果线程已经结束，立刻返回
+// thread: 被等待的线程号
+// retval: 用来储存线程退出状态的指针的地址
+```
