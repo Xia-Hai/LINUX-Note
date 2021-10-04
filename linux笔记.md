@@ -511,3 +511,27 @@ int pthread_join(pthread_t thread, void **retval);
 // thread: 被等待的线程号
 // retval: 用来储存线程退出状态的指针的地址
 ```
+### 线程分离
+一般情况下，线程终止后，其终止状态一直保留到其他线程调用pthread_join获取它为止，但是线程也可以被设置为 detach状态，这样的线程一旦终止就立刻回收它占用的所有资源，而不保留终止状态
+**不能对一个使用pthread_join 的线程调用pthread_join,会返回 EINVAL 的错误**
+```c++
+#include <pthread.h>
+
+int pthread_detach(pthread_t theard);
+// 使调用线程和当前进程分离，分离后不代表改啊线程不依赖于该进程，线程分离的目的是将线程资源回收工作交给系统完成，也就是系统会自动回收它的资源。
+```
+**该函数不会被阻塞**
+
+### 线程退出
+1. 执行函数中 return 线程终止状态
+2. pthread_exit(线程终止状态) 退出线程
+
+### 线程取消
+```c++
+#include <pthread.h>
+
+int pthread_cancel(pthread_t thread);
+
+// 杀死(取消) 一个线程
+```
+**有一个延时，需要等待线程到达某个取消点** 类似于游戏必须在特定的地方存档
