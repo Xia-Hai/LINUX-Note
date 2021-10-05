@@ -489,7 +489,7 @@ pthread_creat 函数
 ```c++
 #include <pthread.h>
 
-int pthread_creat(pthread_t *thread,
+int pthread_create(pthread_t *thread,
             const pthread_attr_t *attr,
             void *(*start_routine)(void *),
             void *arg);
@@ -535,3 +535,79 @@ int pthread_cancel(pthread_t thread);
 // 杀死(取消) 一个线程
 ```
 **有一个延时，需要等待线程到达某个取消点** 类似于游戏必须在特定的地方存档
+
+
+### 线程资源分配问题
+
+##### 同步与互斥
+互斥：临界资源同一时刻只能一个任务访问
+同步：散布在不同任务之间的程序片断，它们的运行需要按照规定的某种先后次序来运行，这种次序依赖于要完成的特定任务。
+##### 互斥锁的必要性
+在多任务的操作系统中，同时运行的多个任务都需要使用同一种资源。避免交叉访问资源，出现错误
+
+#### 互斥锁
+在线程中存在互斥锁 mutex，也叫作 互斥量，互斥锁是一种简单的加锁方法来控制对共享资源的访问，互斥锁有两种状态，lock  和 unlock
+**主要操作流程**
+1. 在访问共享资源临界区域前，对互斥锁进行加锁
+2. 访问完成后释放锁
+3. 对互斥锁加锁后，任何其他试图再次对互斥锁加锁的线程将会被阻塞，直到锁被释放。
+
+互斥锁的数据类型 pthread_mutex_t
+
+pthread_mutex_init 函数
+```c++
+#include <pthread.h>
+
+int pthread__mutex_init(pthread_mutex_t *restrict mutex, const pthread_mutexattr_t *restrict attr);
+// 初始化一个互斥锁
+// mutex: 互斥锁地址， attr：设置互斥锁属性，通常为默认属性NULL
+// 可以使用宏 PTHREAD_MUTEX_INITIALiZER 静态初始化锁，等价于 attr 的参数 为NULL，但是不存在 错误检查
+```
+pthread_mutex_destroy 函数
+```c++
+#include <pthread.h>
+int pthread_mutex_destroy(pthread_mutex_t *mutex);
+
+// 销毁指定的互斥锁，互斥锁在使用完成后，必须要销毁释放资源
+// mutex: address of the mutex
+```
+pthread_mutex_lock 函数
+```c++
+#include <pthread.h>
+int pthread_mutex_lock(pthread_mutex_t *mutex);
+// 如果已经上锁会直接阻塞
+int pthread_mutex_trylock(pthread_mutex_t *mutex);
+// 调用该函数时，没有加锁就加锁，已经加锁就直接返回失败 ** EBUSY **
+```
+pthread_mutex_unlock 函数
+```c++
+int pthread_mutex_unlock(pthread_mutex_t *mutex);
+```
+
+#### 修改数据的不一致
+多个线程共享数据段，同时访问内存，会出现修改数据不一致的情况，修改和写回内存不是原子操作
+**通过上锁来实现**
+
+#### 死锁的基本概念和场景
+多个线程或者进程相互等待对方手中的资源而全部阻塞的情况。也就是申请资源的顺序不当。
+
+原因：
+1. 竞争不可抢占的资源
+2. 竞争可以消耗的资源，进程或者线程推进的顺序不当
+
+死锁的必要条件：
+1. 互斥条件 ： 某个资源只能被一个线程或者进程使用，其他线程请求时，只能等待该线程释放资源
+2. 请求和保持 ： 程序已经保持了至少一个资源，又提出新的要求，而这个资源被其他进程占用，自己的资源保持不放
+3. 不可剥夺条件 ：资源不能被抢占，只能主动释放
+4. 循环等待 ：存在一个循环链
+
+处理死锁的思路：
+预防死锁， 避免死锁， 检测死锁， 解除死锁
+
+**破坏死锁必要条件之一来避免死锁**
+
+### 读写锁
+读多写少，使用互斥量效率就会非常低
+多个线程同时读一个共享资源并不会造成影响
+1. 有其他线程读数据，则允许其他线程执行读操作，不允许写操作
+2. 有其他线程写数据，则不允许其他线程读 写操作
