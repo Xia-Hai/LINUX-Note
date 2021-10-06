@@ -611,3 +611,41 @@ int pthread_mutex_unlock(pthread_mutex_t *mutex);
 多个线程同时读一个共享资源并不会造成影响
 1. 有其他线程读数据，则允许其他线程执行读操作，不允许写操作
 2. 有其他线程写数据，则不允许其他线程读 写操作
+
+pthread_rwlock_init 函数
+```c++
+int pthread_rwlock_init(pthread_rwlock_t *restrict rwlock, const pthread_rwlockattr_t *restrict attr);
+```
+pthread_rwlock_destroy 函数
+```c++
+int pthread_rwlock_destroy(phtread_rwlock_t *rwlock);
+```
+phread_rwlock_rdlock 函数 pthread_rwlock_wrlock 函数加读锁和写锁
+
+### 条件变量
+条件变量本身不是锁，用来等待而不是上锁。
+条件变量用来自动阻塞一个线程，直到某个特殊的情况发生为止。通常和互斥锁同时使用。
+**条件变量的两个条件**
+1. 条件不满足时，阻塞线程
+2. 条件满足时，通知阻塞线程开始工作
+----条件变量的类型为   pthread_cond_t
+
+pthread_cond_init 函数
+```c++
+int pthread_cond_init(pthread_cond_t *restrict cond, const pthread_condattr_t *restrict attr);
+// 同之前的锁 基本一致
+```
+**pthread_cond_destroy 函数**
+**pthread_cond_wait 函数**
+```c++
+int pthread_cond_wait(pthread_cond_t *restrict cond, pthread_mutex_t *restrict mutex);
+// 阻塞等待某个条件变量
+// 1 阻塞等待条件变量cond 满足
+// 2 释放已经掌握的互斥锁，相当于pthread_mutex_unlock
+// 1 2 为一个原子操作
+// 3 当被唤醒，pthread_cond_wait函数返回时，解除阻塞并且重新申请互斥锁 pthread_mutex_lock
+```
+### 生产者消费者条件变量模型
+线程同步典型案例  生产者消费者模型，而借助条件变量来实现这一模型是一种常见的方式。
+假设有两个线程，一个模拟生产者行为，一个模拟消费者行为，两个线程同时操作一个共享资源，生产者向其中添加东西，消费者从中消费东西
+**可以使用链表操作来模拟**
