@@ -649,3 +649,38 @@ int pthread_cond_wait(pthread_cond_t *restrict cond, pthread_mutex_t *restrict m
 线程同步典型案例  生产者消费者模型，而借助条件变量来实现这一模型是一种常见的方式。
 假设有两个线程，一个模拟生产者行为，一个模拟消费者行为，两个线程同时操作一个共享资源，生产者向其中添加东西，消费者从中消费东西
 **可以使用链表操作来模拟**
+
+### 信号量
+信号量广泛用于进程和线程间的同步和互斥，信号量本质上是一个非负的整数计数器，被用来控制对公共资源的访问。
+**信号量** 大于0，可以访问，反之阻塞
+
+PV原语 用于互斥和同步
+
+sem_init 函数 和 sem_destroy 函数
+```c++
+#include <semaphore.h>
+int sem_init(sem_t *sem, int pshared, unsigned int value);
+// 创建一个信号量并初始化，一个无名的信号量必须在使用之前初始化
+// pshared = 0 信号量在线程间共享， ！= 0，在进程间共享     value ： 信号量的初始值
+int sem_destroy(sem_t *sem);
+```
+P操作
+```c++
+int sem_wait(sem_t *sem);
+// 将信号量减 1 操作前检查sem是不是0，如果是 0 此函数会阻塞，直到信号量sem 大于0时才能减 1
+
+int sem_trywait(sem_t *sem);
+// 以非阻塞的方式来对信号量 减1 如果操作前 sem = 0， 则操作失败，直接返回
+```
+V操作
+```c++
+int sem_post(sem_t *sem);
+// 将信号量加 1， 并发出信号唤醒等待的线程
+```
+获取信号量的值
+```c++
+#include <semaphore.h>
+int sem_getvalue(sem_t *sem, int *sval);
+// 获取信号量的值并保存在 sval 中
+```
+
