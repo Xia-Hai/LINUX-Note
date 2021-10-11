@@ -1,4 +1,7 @@
+## 系统编程
 ### 静态库 动态库
+
+
 g++ *.cpp -o * 默认使用动态链接
 
 g++ -static *.cpp -o * 使用静态链接
@@ -684,3 +687,78 @@ int sem_getvalue(sem_t *sem, int *sval);
 // 获取信号量的值并保存在 sval 中
 ```
 
+
+
+## 网络编程
+
+#### 字节序
+大端字节序：高位存低地址
+小端字节序：低位存低地址(高位和地位指的是字节的高低位)
+**一般网络上都使用大端字节序进行传播**
+所以主机字节序必须转化为网络字节序在网络上传播，这里的网络字节序就是大端字节序。在接收方的操作与此相反。
+
+主机字节序和网络字节序的转换函数
+```c++
+#include <arpa/inet.h>
+
+uint32_t htonl(uint32_t hostlong);
+uint16_t htons(uint16_t hostshort);
+uint32_t ntohl(uint32_t netlong);
+uint16_t ntohs(uint16_t netshort);
+typedef unsigned long int uint32_t;
+typedef unsigned short int uint16_t;
+```
+ip地址转换函数
+```c++
+#include <arpa/inet.h>
+int inet_pton(int af, const char *src, void *dst);
+const char *inet_ntop(int af, const void *src, char *dst, socklen_t size);
+```
+
+### TCP 传输控制协议
+特点：出错重传，每次发送数据对方都会回ACK，安全可靠的连接
+**客户端**
+1. 创建套接字socket
+```c++
+#include <sys/socket.h>
+int socket(int domain, int type, int protocol);
+
+// domain: AF_INET AF_INET6等
+// type: SOCK_STREAM 流式的套接字，用于tcp通信
+// protocol: 0
+// 成功返回文件描述符
+```
+2. 连接服务器
+```c++
+int connect(int sock_fd, const struct sockaddr * addr, socklen_t addrlen);
+// 连接服务器
+// sockfd: socket套接字
+// addr: ipv4套接字结构体体的地址(转换为 sockaddr 类型)
+```
+3. 读写数据，然后关闭
+**服务端**
+1. 创建套接字
+2. 绑定固定的端口和IP
+```c++
+int bind (int sock_fd, const struct sockaddr *addr, socklen_t addrlen);
+// sockfd : 套接字
+// addr : ipv4套接字结构体
+// addr : 结构体长度
+```
+
+3. 监听 a 套接字由主动变为被动，只能等待连接
+        b 创建一个连接队列(已完成队列和未完成队列)
+        c 从已完成队列中提取连接，得到一个新的套接字，接下来用这个套接字和客户端通信
+```c++
+int listen(int sock_fd, int backlog);
+// sock_fd: 套接字
+// backlog:  已完成连接队列和未完成连接队列连接数的最大值 一般为 128就够了  
+int accept(int socket, struct sockaddr *restrict address, socklen_t *restrict address_len);
+// socket: 套接字
+// address: 获取客户端的ip和端口信息
+// address_len: ipv4结构体的大小的地址
+// 返回新的已连接套接字文件描述符
+```
+
+4. 读写
+5. 关闭
