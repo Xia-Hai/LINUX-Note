@@ -748,7 +748,7 @@ int bind (int sock_fd, const struct sockaddr *addr, socklen_t addrlen);
 
 3. 监听 a 套接字由主动变为被动，只能等待连接
         b 创建一个连接队列(已完成队列和未完成队列)
-        c 从已完成队列中提取连接，得到一个新的套接字，接下来用这个套接字和客户端通信
+        c **从已完成队列中提取连接**，得到一个新的套接字，接下来用这个套接字和客户端通信
 ```c++
 int listen(int sock_fd, int backlog);
 // sock_fd: 套接字
@@ -762,3 +762,5 @@ int accept(int socket, struct sockaddr *restrict address, socklen_t *restrict ad
 
 4. 读写
 5. 关闭
+
+### TCP 三次握手和四次挥手
