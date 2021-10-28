@@ -764,3 +764,57 @@ int accept(int socket, struct sockaddr *restrict address, socklen_t *restrict ad
 5. 关闭
 
 ### TCP 三次握手和四次挥手
+
+MSS：最大报文长度，一般出现在三次握手的前两次，用来告知对方发送数据的最大长度。
+MTU：最大传输单元，与网卡的属性有关。
+
+
+### 滑动窗口
+保证TCP通信的可靠性，同时可以进行流量控制和拥塞控制
+窗口可以理解为窗口的大小，随着收发数据而变化，通信双方都有缓冲区。
+### TCP服务器并发
+使用多进程或者多线程解决
+多进程思路：
+    父进程和多个子进程
+    父进程负责监听
+    子进程负责完成通信
+```c++
+    // 使用信号集来回收子进程的资源
+    struct sigaction act;
+    act.sa_flags = 0;
+    sigemptyset(&act.sa_mask);
+    act.sa_handler = recycleChild;
+    sigaction(SIGCHLD, &act, NULL);
+    // 处理回调函数
+    void recycleChild(int arg) {
+    while (1) {
+        int ret = waitpid(-1, NULL, WNOHANG);
+        if (ret == -1) {
+            // 子进程都回收完了
+            break;
+        }
+        else if (ret == 0) {
+            // 还有子进程在运行
+            break;
+        }
+        else if (ret > 0) {
+            // 被回收了
+            cout << "子进程 " << ret << " 被回收了" << endl;
+        }
+    }
+}
+```
+### 多路IO复用，多路IO转接
+select 函数
+```c++
+int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout);
+// 监听多个文件描述符的属性变化
+// nfds: 最大文件描述符 + 1， 后面分别为读， 写， 异常文件描述符的集合， timeout：监听的时间间隔
+// 返回变化文件描述符的个数，具体存放在文件描述符集合中
+
+// 文件描述符操作
+void FD_CLR(int fd, fd_set *set);
+int FD_ISSET(int fd, fd_set *set);
+void FD_SET(int fd, fd_set *set);
+void FD_SET(fd_set *set);
+```
