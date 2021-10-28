@@ -805,12 +805,23 @@ MTU：最大传输单元，与网卡的属性有关。
 }
 ```
 ### 多路IO复用，多路IO转接
-select 函数
+select 函数(这个函数是阻塞的，对文件描述符的检测由内核完成，告诉进程有多少文件描述符发生了变化)
 ```c++
+#include<sys/time.h>
+#include<sys/types.h>
+#include<unistd.h>
 int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout);
 // 监听多个文件描述符的属性变化
 // nfds: 最大文件描述符 + 1， 后面分别为读， 写， 异常文件描述符的集合， timeout：监听的时间间隔
+struct timeval {
+    long tv_sec;
+    long tv_usec;
+}; 
+// -NULL 永久阻塞，直到检测到文件描述符变化
+// -两个long都为0表示 不阻塞
+
 // 返回变化文件描述符的个数，具体存放在文件描述符集合中
+// 返回-1 表示失败
 
 // 文件描述符操作
 void FD_CLR(int fd, fd_set *set);
