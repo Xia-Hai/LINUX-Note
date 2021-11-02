@@ -829,3 +829,51 @@ int FD_ISSET(int fd, fd_set *set);
 void FD_SET(int fd, fd_set *set);
 void FD_SET(fd_set *set);
 ```
+poll 函数
+```c++
+#include <poll.h>
+struct pollfd {
+    int fd;       // 委托内核检测的文件描述符
+    short events; // 委托内核检测文件描述符的事件
+    short revents; // 文件描述符实际发生的事件
+}
+
+int poll(struct pollfd *fds, nfds_t nfds, int timeout);
+// events 可以有 POLLIN POLLOUT 等
+// timeout 0； 表示不阻塞， -1 表示永久阻塞，大于0位阻塞时长
+// 返回值 -1 失败， >0 成功
+```
+
+epoll 函数（有效避免用户态和内核态的拷贝）
+```c++
+#include <sys/epoll.h>
+int epoll_creat(int size); // 创建一个新的epoll实例
+// 在内核中创建，有两个主要数据，1. 需要检测的文件描述符的信息，为红黑树结构，2.还有一个是就绪列表，双向链表，存放检测到数据发生改变的文件描述符的信息；
+// size：没有意义，任意一个大于 0 的数
+// 返回值 -1：失败， >0 表示一个操作epoll实例的文件描述符
+typedef union epoll_data {
+    void *ptr;
+    int fd;
+    uint32_t u32;
+    uint64_t u64;
+} epoll_data_t;
+
+struct epoll_event {
+    uint32_t events; // EPOLLIN EPOLLOUT EPOLLERR 等
+    epoll_data_t data;
+}
+// 对epoll实例进行管理，添加，删除，修改文件描述符的信息
+int epoll_ctl(int epfd, in op, int fd, struct epoll_event *event);
+// -epfd: epoll实例文件描述符
+// -op: 要进行的操作， EPOLL_CTL_ADD(MOD, DEL等)
+// -fd: 要进行操作的文件描述符
+// -event: 检测文件描述符具体的事情
+
+// 检测函数
+int epoll_wait(int epfd, struct epoll_event *events, int maxevents, int timeout);
+// epfd: epoll实例对应的文件描述符
+// events: 传出参数，保存发生了变化的文件描述符的信息 
+// maxevents: 第二参数数组的大小
+// timeout: 设置阻塞时长，-1 为阻塞，知道检测到数据发生变化 0 不阻塞 >0 为阻塞的时间（单位为 ms）
+// 返回值： 成功返回发生变化的文件描述符的个数，失败返回 -1；
+```

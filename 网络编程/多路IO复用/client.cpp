@@ -56,7 +56,7 @@ int main() {
         else {
             cout << "server shutdown the connect..." << endl;
         }
-        sleep(1);
+        usleep(1000);
         
     }
     // 关闭
