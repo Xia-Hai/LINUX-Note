@@ -877,3 +877,23 @@ int epoll_wait(int epfd, struct epoll_event *events, int maxevents, int timeout)
 // timeout: 设置阻塞时长，-1 为阻塞，知道检测到数据发生变化 0 不阻塞 >0 为阻塞的时间（单位为 ms）
 // 返回值： 成功返回发生变化的文件描述符的个数，失败返回 -1；
 ```
+epoll 的工作模式
+- LT 模式（水平触发）
+    为缺省的工作方式，并且同时支持 block 和 un-block socket。在这种做法中，内核告诉你一个文件描述符是否就绪了，然后就可以对就绪的文件描述符进行 IO 操作，不做任何工作内核还是会通知你
+- ET 模式（边沿触发）
+    高速工作方式，只支持 no-block socket。在这种模式下，当文件描述符从为就绪变为就绪时，内核通过 epoll 告诉你。
+    ET 模式很大程度上减少了 epoll 事件被重复触发的次数，效率比 LT 模式高。**必须使用非阻塞套接口** 以避免由于一个文件句柄的阻塞读/阻塞写操作把处理多个文件描述符的任务饿死。
+
+### UDP 通信
+```c++
+#include <sys/types.h>
+#include <sys/socket.h>
+ssize_t sendto(int sockfd, const void *buf, size_t len, int flags, const struct sockaddr *dest_addr, socklen_t addrlen);
+    -sockfd: 通信的fd
+    -buf: 要发送的数据
+    -len: 发送数据的大小
+    -flags: 0
+    -dest_addr: 通信目的地的地址信息
+    -addrlen: 地址信息的大小
+ssize_t recvfrom(int sockfd, void *buf, size_t len, int flags, struct sockaddr *src_addr, socklen_t addrlen);
+```

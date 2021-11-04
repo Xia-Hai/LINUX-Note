@@ -62,9 +62,10 @@ int main() {
             else {
                 if (epevs[i].events & EPOLLOUT) {
                     // do write
+                    continue;
                 }
                 // else do read
-                char buf[1024] = {0};
+                char buf[5] = {0};
                 int len = read(curfd, buf, sizeof(buf));
                 if (len == 0) {
                     cout << "client closed..." << endl;
@@ -77,6 +78,8 @@ int main() {
                     return -3;
                 }
                 //cout << "rev buf: " << buf << endl;
+                //cout << strlen(buf) << endl;
+                buf[5] = '\0';
                 write(STDOUT_FILENO, buf, len);
                 cout << endl;
                 write(curfd, buf, strlen(buf) + 1);   

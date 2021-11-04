@@ -4,6 +4,7 @@
 #include <sys/epoll.h>
 #include <unistd.h>
 #include <string.h>
+#include <fcntl.h>
 
 using namespace std;
 
@@ -52,34 +53,46 @@ int main() {
             char ip[16] = {0};
             unsigned short port = 0;
             inet_ntop(AF_INET, &cliaddr.sin_addr.s_addr, ip, 16);
+            //ip[strlen(ip) + 1] = '\0';
             port = ntohs(cliaddr.sin_port);
             cout << "IP: " << ip << " Port: " << port << endl;
-     
-            epev.events = EPOLLIN;
+            
+            // 设置 cfd 为非阻塞
+            int flag = fcntl(cfd, F_GETFL);
+            flag |= O_NONBLOCK;
+            fcntl(cfd, F_SETFL, flag);
+
+            epev.events = EPOLLIN | EPOLLET;
             epev.data.fd = cfd;
             epoll_ctl(epfd, EPOLL_CTL_ADD, cfd, &epev);
             }
             else {
-                if (epevs[i].events & EPOLLOUT) {
-                    // do write
+                
+               
+                // 循环读取数据 
+                char revbuf[5];
+                memset(revbuf, 0, sizeof(revbuf));
+                int len = 0;
+                while ((len = read(curfd, revbuf, sizeof(revbuf))) > 0) {
+                    //buf[5] = '\0';
+                    //cout << len  << endl;
+                    //cout << "rev data: " << revbuf << endl;
+                    write(STDOUT_FILENO, revbuf, len);
+                    write(curfd, revbuf, len);
+                    memset(revbuf, 0, sizeof(revbuf));   
                 }
-                // else do read
-                char buf[1024] = {0};
-                int len = read(curfd, buf, sizeof(buf));
                 if (len == 0) {
                     cout << "client closed..." << endl;
-                    epoll_ctl(epfd, EPOLL_CTL_DEL, curfd, NULL);
-                    close(curfd);
-                    continue;
                 }
                 else if (len == -1) {
-                    perror("read");
-                    return -3;
-                }
-                //cout << "rev buf: " << buf << endl;
-                write(STDOUT_FILENO, buf, len);
-                cout << endl;
-                write(curfd, buf, strlen(buf) + 1);   
+                    if (errno == EAGAIN) {
+                        cout << "data over..." << endl;
+                    }
+                    else {
+                        perror("read");
+                        return -3;
+                    }
+                } 
             }
         }
     }
