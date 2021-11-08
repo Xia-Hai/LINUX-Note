@@ -923,3 +923,9 @@ ssize_t recvfrom(int sockfd, void *buf, size_t len, int flags, struct sockaddr *
 - 信号驱动 
     - 进程收到SIGIO信号，开始处理IO事件
 - 异步
+
+### Web Server（网页服务器）
+通过HTTP协议与客户端（浏览器）进行通信，来接收，存储，处理来自客户端的HTTP请求，并对其请求做出HTTP响应，返回给客户端其请求的内容或者一个error信息。
+
+#### HTTP协议（应用层的协议）
+- 超文本传输协议，基于请求和响应的协议
