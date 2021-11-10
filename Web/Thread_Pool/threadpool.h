@@ -58,7 +58,7 @@ threadpool<T>::threadpool(int thread_number, int max_requests) : m_thread_number
     }
     // 创建thread_number个线程, 并设置为线程脱离
     for (int i = 0; i < thread_number; i++) {
-        cout << "create the " << i << "th thread" << endl;
+        std::cout << "create the " << i << "th thread" << std::endl;
 
         if (pthread_create(m_threads + i, NULL, worker, this) != 0) {
             delete [] m_threads;
@@ -118,4 +118,6 @@ void threadpool<T>::run() {
         request->process();
     }
 }
+
 #endif
+/* THREADPOOL_H */
